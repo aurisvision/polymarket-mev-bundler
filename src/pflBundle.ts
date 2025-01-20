@@ -148,21 +148,69 @@ export function buildBundle(
 // ------------------------------
 // Submit the Bundle and Transaction
 // ------------------------------
-export async function submitBundle(bundle: PFLBundle, opportunityTx: string) {
-  // First submit the opportunity transaction to the network
-  console.log("\nSubmitting opportunity transaction to network...");
-  const txResponse = await provider.broadcastTransaction(opportunityTx);
-  console.log("Transaction submitted:", txResponse.hash);
-  
-  // Then submit the bundle to FastLane
-  console.log("\nSubmitting bundle to FastLane aggregator...");
-  console.log("Bundle payload:", JSON.stringify(bundle, null, 2));
-  
-  const resp = await axios.post(FASTLANE_RELAY_URL, bundle);
-  console.log("Bundle submitted. Relay response:", resp.data);
+const RETRY_DELAY = 5000; // 5 seconds
+const MAX_ATTEMPTS = 3;
 
-  // Wait for transaction confirmation
-  console.log("\nWaiting for transaction confirmation...");
-  const receipt = await txResponse.wait();
-  console.log("Transaction confirmed in block:", receipt?.blockNumber);
+async function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export async function submitBundle(bundle: PFLBundle, opportunityTx: string) {
+  let attempts = 0;
+  
+  while (attempts < MAX_ATTEMPTS) {
+    attempts++;
+    console.log(`\nAttempt ${attempts}/${MAX_ATTEMPTS} to submit bundle...`);
+    
+    try {
+      // Submit to FastLane
+      console.log("Submitting bundle to FastLane aggregator...");
+      console.log("Bundle payload:", JSON.stringify(bundle, null, 2));
+      
+      const resp = await axios.post(FASTLANE_RELAY_URL, bundle);
+      console.log("Bundle submitted. Relay response:", resp.data);
+
+      // Check for FastLane errors
+      if (resp.data.error) {
+        console.error("FastLane submission failed:", resp.data.error);
+        if (attempts < MAX_ATTEMPTS) {
+          console.log(`Retrying in ${RETRY_DELAY/1000} seconds...`);
+          await sleep(RETRY_DELAY);
+          continue;
+        }
+        throw new Error(`FastLane error: ${resp.data.error.message}`);
+      }
+
+      // If we get here, submission was successful
+      // Check if transaction exists on chain
+      const txHash = ethers.keccak256(opportunityTx);
+      const tx = await provider.getTransaction(txHash);
+      
+      // Only submit to RPC if transaction doesn't exist
+      if (!tx) {
+        console.log("\nTransaction not found on chain, submitting to network...");
+        const txResponse = await provider.broadcastTransaction(opportunityTx);
+        console.log("Transaction submitted:", txResponse.hash);
+
+        // Wait for transaction confirmation
+        console.log("\nWaiting for transaction confirmation...");
+        const receipt = await txResponse.wait();
+        console.log("Transaction confirmed in block:", receipt?.blockNumber);
+      } else {
+        console.log("\nTransaction already exists on chain:", txHash);
+      }
+
+      // If we get here, everything worked
+      return;
+
+    } catch (error) {
+      console.error(`Error in attempt ${attempts}:`, error);
+      if (attempts < MAX_ATTEMPTS) {
+        console.log(`Retrying in ${RETRY_DELAY/1000} seconds...`);
+        await sleep(RETRY_DELAY);
+      } else {
+        throw new Error(`Failed after ${MAX_ATTEMPTS} attempts: ${error}`);
+      }
+    }
+  }
 } 
