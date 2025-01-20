@@ -1,62 +1,101 @@
 # Polymarket MEV Bundle POC
 
-This project demonstrates how to submit a bundle to Atlas using the FastLane Labs SDK. It includes an example of creating a dummy transaction and bundling it with a solver operation.
+This project demonstrates a censorship-resistant transaction submission mechanism using Atlas and FastLane Labs infrastructure.
 
-## Prerequisites
+## Architecture
 
-- Node.js (v16 or later)
-- npm
-- An Infura API key for Polygon network access
-- Private keys for testing (opportunity wallet and solver wallet)
+The system works by:
+1. Publishing a user's transaction to the network normally
+2. Creating a bundle that includes this transaction for auction
+3. Achieving guaranteed inclusion through FastLane's direct validator connectivity
+
+### Project Structure
+
+1. `src/helpers.ts`
+   - Common utilities and setup
+   - Environment variables and constants
+   - Network verification
+   - Atlas bonding functionality
+
+2. `src/opportunityTx.ts`
+   - Core transaction customization point for users
+   - Defines the transaction that needs censorship resistance
+   - Currently implements a simple transfer, but can be modified for:
+     * Complex DeFi interactions
+     * Token transfers
+     * Contract deployments
+     * Any other transaction type
+
+3. `src/pflBundle.ts`
+   - PFL (Priority Fee Lane) bundle creation and submission
+   - Solver operation building for auction participation
+   - DAppControl contract interaction for userOp hashing
+   - FastLane relay communication for validator connectivity
+
+4. `src/submitDummyBundle.ts`
+   - Main orchestration script demonstrating the flow:
+     1. Verify network and ensure solver has sufficient bond
+     2. Build and sign the user's transaction
+     3. Create a bundle including this transaction
+     4. Submit to FastLane for guaranteed inclusion
 
 ## Setup
 
-1. Clone the repository
-2. Install dependencies:
-```bash
-npm install
-```
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-3. Configure environment variables:
-   - Copy `.env.example` to `.env`:
-     ```bash
-     cp .env.example .env
-     ```
-   - Edit `.env` and fill in your values:
-     - `INFURA_RPC_URL`: Your Infura Polygon RPC URL
-     - `OPPORTUNITY_WALLET_PRIVATE_KEY`: Private key for the opportunity wallet
-     - `SOLVER_WALLET_PRIVATE_KEY`: Private key for the solver wallet
-     - `FASTLANE_RELAY_URL`: (Optional) FastLane Polygon RPC URL, defaults to "https://polygon-rpc.fastlane.xyz/"
+2. Create a `.env` file with:
+   ```
+   RPC_URL=                         # Polygon RPC endpoint
+   OPPORTUNITY_WALLET_PRIVATE_KEY=  # Key for the transaction sender
+   SOLVER_WALLET_PRIVATE_KEY=       # Key for the bundle submitter
+   ```
 
 ## Usage
 
-To run the example:
+1. Customize your transaction in `src/opportunityTx.ts`
+2. Run the script:
+   ```bash
+   npm start
+   ```
 
-```bash
-npm start
-```
+## Architecture Benefits
 
-For development with auto-reload:
+### 1. Censorship Resistance
+- Transaction is published normally but also bundled
+- FastLane ensures inclusion through direct validator connections
+- Bypasses potential MEV-boost censorship
 
-```bash
-npm run dev
-```
+### 2. Customization
+- Users can modify `opportunityTx.ts` for their specific needs
+- Core bundle submission logic remains unchanged
+- Maintains separation between user logic and infrastructure
 
-## Project Structure
+## Requirements
 
-- `src/bundleExample.ts` - Main example demonstrating Atlas SDK integration
-- `tsconfig.json` - TypeScript configuration
-- `package.json` - Project dependencies and scripts
-- `.env.example` - Template for environment variables
-- `.env` - Your actual environment variables (not committed to git)
+- Network: Polygon (chainId=137)
+- Uses Atlas SDK for transaction handling
+- Requires RPC endpoint loaded from .env
+- Private keys loaded from .env file
 
 ## Important Notes
 
-- This is a proof-of-concept implementation
-- Uses Polygon network (chainId=137)
-- The example creates a dummy transaction and solver operation
-- Make sure to replace placeholder values in `.env` with actual credentials before running
-- Never commit your `.env` file or expose your private keys
+1. The solver wallet needs:
+   - Sufficient MATIC for bonding (minimum 0.5 MATIC)
+   - Additional MATIC for gas fees
+
+2. The opportunity wallet needs:
+   - Sufficient MATIC for the transaction
+   - Additional MATIC for gas fees
+
+## Development
+
+To modify for your own use:
+1. Update `src/opportunityTx.ts` with your transaction logic
+2. Keep the bundle submission flow in `src/pflBundle.ts` unchanged
+3. Adjust gas parameters and bid amounts in `src/helpers.ts` if needed
 
 ## Contract Addresses
 
