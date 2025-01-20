@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import { 
   opportunityWallet,
   CHAIN_ID,
+  provider
 } from "./helpers";
 
 // ------------------------------
@@ -12,8 +13,16 @@ export async function buildOpportunityTransaction(): Promise<{
   maxFeePerGas: bigint;
   maxPriorityFeePerGas: bigint;
 }> {
-  const maxFeePerGas = ethers.parseUnits("100", "gwei");
-  const maxPriorityFeePerGas = ethers.parseUnits("30", "gwei");
+  // Note: Here we are using the current gas prices from the provider however 
+  // we could also use a high static value if we want to ensure a certain gas price
+  // Fetch current gas prices
+  const feeData = await provider.getFeeData();
+  if (!feeData.maxFeePerGas || !feeData.maxPriorityFeePerGas) {
+    throw new Error("Could not get current gas prices");
+  }
+
+  const maxFeePerGas = feeData.maxFeePerGas;
+  const maxPriorityFeePerGas = feeData.maxPriorityFeePerGas;
 
   // Base transaction request
   const baseTxRequest = {
