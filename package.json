@@ -1,0 +1,25 @@
+{
+  "name": "polymarket-mev-bundle-poc",
+  "version": "1.0.0",
+  "description": "Example project demonstrating Atlas SDK integration for MEV bundle submission",
+  "main": "dist/bundleExample.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/bundleExample.ts",
+    "dev": "ts-node-dev --respawn src/bundleExample.ts"
+  },
+  "keywords": ["atlas", "fastlane", "mev", "ethereum", "polygon"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fastlane-labs/atlas-sdk": "^0.1.0",
+    "axios": "^1.6.7",
+    "ethers": "^6.11.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  }
+}
