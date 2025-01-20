@@ -6,6 +6,29 @@ Demonstrate a censorship-resistant transaction submission mechanism using Atlas 
 3. Achieves guaranteed inclusion through FastLane's direct validator connectivity
 4. Retries failed submissions up to 3 times with 5-second intervals
 
+## Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant PM as Polymarket
+    participant FL as FastLane API
+    participant V as Validator
+    participant AT as Block
+
+
+    PM->>PM: Create dispute tx
+    PM->>PM: Create dummy solverOp
+    PM->>FL: Submit bundle (dispute tx + solverOp)
+    
+    FL->>FL: Create metacall tx
+    FL->>V: Submit bundle (opportunities + metacall)
+    Note over V: Bundle auction & selection
+    
+    V->>AT: Include dispute tx
+    V->>AT: Include metacall tx
+    Note over AT: Metacall included<br/>(no impact on dispute)
+```
+
 ## Project Structure
 
 1. `src/helpers.ts`
