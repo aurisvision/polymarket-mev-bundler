@@ -186,6 +186,8 @@ export async function submitBundle(bundle: PFLBundle, opportunityTx: string) {
       const txHash = ethers.keccak256(opportunityTx);
       const tx = await provider.getTransaction(txHash);
       
+      // Notice: This submission is not necessary since fastlane will submit to the network
+      // but might be useful depending on the use case
       // Only submit to RPC if transaction doesn't exist
       if (!tx) {
         console.log("\nTransaction not found on chain, submitting to network...");

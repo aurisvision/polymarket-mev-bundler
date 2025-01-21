@@ -59,7 +59,7 @@ sequenceDiagram
      2. Build and sign the user's transaction
      3. Create a bundle including this transaction
      4. Submit to FastLane with retries
-     5. Submit to RPC if not already on chain
+     5. Submit to RPC if not already on chain (optional)
 
 ## Setup
 
