@@ -94,8 +94,3 @@ sequenceDiagram
 | Atlas | `0x4A394bD4Bc2f4309ac0b75c052b242ba3e0f32e0` | Main Atlas contract |
 | PFL-dApp | `0x3e23e4282FcE0cF42DCd0E9bdf39056434E65C1F` | PFL dApp contract |
 | dAppSigner | `0x96D501A4C52669283980dc5648EEC6437e2E6346` | dApp signer |
-
-## References
-
-- [Atlas SDK Documentation](https://fastlane-labs.gitbook.io/polygon-fastlane/searcher-guides/atlas-sdks)
-- [FastLane Labs Documentation](https://fastlane-labs.gitbook.io/polygon-fastlane) 
