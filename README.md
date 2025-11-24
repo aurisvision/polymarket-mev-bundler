@@ -1,4 +1,4 @@
-# Polymarket MEV Bundle POC
+# Polymarket MEV Bot, Polymarket Bundler
 
 Demonstrate a censorship-resistant transaction submission mechanism using Atlas and FastLane Labs infrastructure. This approach:
 1. Publishes a user's transaction to the network
